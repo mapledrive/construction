@@ -3,6 +3,23 @@ import { Provider } from 'react-redux';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+import { useState, useEffect } from 'react';
+
+interface OutlayRow {
+  child: string[];
+  equipmentCosts: number;
+  estimatedProfit: number;
+  id: number;
+  machineOperatorSalary: number;
+  mainCosts: number;
+  materials: number;
+  mimExploitation: number;
+  overheads: number;
+  rowName: string;
+  salary: number;
+  supportCosts: number;
+  total: number;
+}
 
 // {
 //   "id": 140037,
@@ -29,8 +46,32 @@ export const { useGetConstructionQuery } = constructionApi;
 
 export default function App() {
   const { data, error, isLoading } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
-  if (data && data) console.log(data);
-  return <>{data ? data.map((i) => <div key={i.equipmentCosts}>{i.equipmentCosts}</div>) : <p>no data</p>}</>;
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      setCustomError('error');
+    } else {
+      setCustomError(null);
+    }
+  }, [error]);
+
+  if (data) console.log(data);
+
+  return (
+    <>
+      {isLoading ? (
+        <p>Loading data...</p>
+      ) : error ? (
+        <p>Error: {'error'}</p>
+      ) : data ? (
+        data.map((i: OutlayRow) => <div key={i.equipmentCosts}>{i.equipmentCosts}</div>)
+      ) : (
+        <p>No data available</p>
+      )}
+      {customError && <p>Error: {customError}</p>}
+    </>
+  );
 }
 
 export const store = configureStore({
