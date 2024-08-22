@@ -286,11 +286,9 @@ export const constructionApi = createApi({
       async onQueryStarted(args, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
-          // Handle successful update (e.g., update local state, refresh data)
-          console.log('Update successful:', result);
-          dispatch(constructionApi.util.resetApiState()); // Optional: Reset API state for a fresh start
+          console.log('Update successful:', result, args);
+          dispatch(constructionApi.util.resetApiState());
         } catch (error) {
-          // Handle update errors (e.g., display error message, retry)
           console.error('Update failed:', error);
         }
       },
