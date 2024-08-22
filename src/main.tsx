@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -126,22 +126,18 @@ let sidebar_titles: string[] = [
 
 const RowContext = createContext(null);
 
-type DynamicObject = {
-  [key: string]: string | number | boolean | object | any;
-};
-
 interface TableProps {
-  rows: DynamicObject[];
+  rows: any;
 }
 
 // эти элементы не числятся как дети ни в одном другом обьекте в массиве child
-function filterFirstLevelRows(rows: DynamicObject[]) {
-  const childValues = new Set(rows.flatMap((row) => row.child));
+function filterFirstLevelRows(rows: any) {
+  const childValues = new Set(rows.flatMap((row: any) => row.child));
   return rows.filter((row) => !childValues.has(row.id));
 }
 
 function filterInitialState(initialState: any[], future: any[]) {
-  return initialState.filter((item) => future.includes(item.id));
+  return initialState.filter((item: any) => future.includes(item.id));
 }
 
 type DataType = Array<object> | number;
@@ -177,9 +173,15 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     );
   }
 
-  const findChild = (data: number) => items?.find((item: DynamicObject[]) => data === item.id);
+  type ObjectType = {
+    [key: string]: any;
+  };
 
-  let found = findChild(data);
+  const findChild = (data: number, items?: ObjectType[]): ObjectType | null => {
+    return items?.find((item: ObjectType) => data === item.id) ?? null;
+  };
+
+  let found = findChild(data, items);
 
   const filteredInitialState = filterInitialState(items, found?.child);
 
@@ -204,7 +206,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
             <StyledTableCellRight>{id}</StyledTableCellRight>
             <StyledTableCellRight>{id}</StyledTableCellRight>
           </StyledTableRow>
-          <Rows data={id} />
+          <Rows data={id} {...other} />
         </React.Fragment>
       ))}
     </>
@@ -239,9 +241,12 @@ function BasicTable({ rows }: TableProps) {
   console.log(rows, 'rows');
   const firstLevelObjects = filterFirstLevelRows(rows);
   console.log(firstLevelObjects, 'firstLevelObjects');
+
   return (
     <RowContext.Provider value={rows}>
-      <Rows data={rows} />
+      {firstLevelObjects?.length > 0 && (
+        <Rows data={firstLevelObjects ?? []} /> // Provide a default value if firstLevelObjects is null
+      )}
     </RowContext.Provider>
   );
 }
