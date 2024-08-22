@@ -213,9 +213,19 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
           </StyledTableHead>
           <TableBody>
             {firstLevelObjects.map(({ child, id, ...other }) => (
-              <Row key={id} {...other} handleAddChild={handleAddChild}>
+              <React.Fragment key={id}>
+                <StyledTableRow>
+                  <StyledTableCellIconHeader style={{ padding: '0px' }}>
+                    <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+                  </StyledTableCellIconHeader>
+                  <StyledTableCell style={{ width: '400px' }}>{id}</StyledTableCell>
+                  <StyledTableCellRight>{id}</StyledTableCellRight>
+                  <StyledTableCellRight>{id}</StyledTableCellRight>
+                  <StyledTableCellRight>{id}</StyledTableCellRight>
+                  <StyledTableCellRight>{id}</StyledTableCellRight>
+                </StyledTableRow>
                 <Rows data={id} />
-              </Row>
+              </React.Fragment>
             ))}
           </TableBody>
         </StyledTable>
@@ -232,16 +242,14 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   const filteredInitialState = filterInitialState(items, found?.child);
 
   // Вычислить левый паддинг прогрессивно на основе depth
-  const getLeftPadding = (depth: number) => {
-    return `${depth * 16}px`;
-  };
+  const getLeftPadding = (depth: number) => `${depth * 16}px`;
 
   // 2-ой 3-ий вложенный коммент итд
   return (
     <>
       {filteredInitialState?.map(({ child, id, ...other }, index) => (
         <React.Fragment key={id}>
-          <StyledTableRow key={id}>
+          <StyledTableRow>
             <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
               <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
             </StyledTableCellIconHeader>
@@ -264,24 +272,6 @@ interface RowProps {
   id?: number;
   handleAddChild: any;
 }
-
-const Row: React.FC<RowProps> = ({ children, equipmentCosts, id, handleAddChild }) => {
-  return (
-    <React.Fragment key={id}>
-      <StyledTableRow key={id}>
-        <StyledTableCellIconHeader style={{ padding: '0px' }}>
-          <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
-        </StyledTableCellIconHeader>
-        <StyledTableCell style={{ width: '400px' }}>{equipmentCosts}</StyledTableCell>
-        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
-        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
-        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
-        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
-      </StyledTableRow>
-      {children}
-    </React.Fragment>
-  );
-};
 
 function BasicTable({ rows }: TableProps) {
   console.log(rows, 'rows');
