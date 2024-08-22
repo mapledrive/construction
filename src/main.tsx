@@ -266,20 +266,6 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   );
 };
 
-function BasicTable({ rows }: TableProps) {
-  console.log(rows, 'rows');
-  const firstLevelObjects = filterFirstLevelRows(rows);
-  console.log(firstLevelObjects, 'firstLevelObjects');
-
-  return (
-    <RowContext.Provider value={rows}>
-      {firstLevelObjects?.length > 0 && (
-        <Rows data={firstLevelObjects ?? []} /> // Provide a default value if firstLevelObjects is null
-      )}
-    </RowContext.Provider>
-  );
-}
-
 // {
 //   "id": 140037,
 //   "rowName": "8de3c6c5-ff9a-4463-9b7f-26c708268f78"
@@ -298,7 +284,7 @@ export const constructionApi = createApi({
     }),
     addChildItem: builder.mutation({
       query: (newItem) => ({
-        url: '/api/add-child-item', // Replace with your actual API endpoint
+        url: 'v1/outlay-rows/entity/140037/row/create',
         method: 'POST',
         body: newItem,
       }),
@@ -342,62 +328,64 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <AppContainer>
-        <CssBaseline />
-        <Grid container spacing={0}>
-          {/* Header */}
-          <Grid item xs={12}>
-            <AppBar position="static" sx={{ backgroundColor: 'rgb(32, 33, 36)', borderTop: '1px solid rgba(161, 161, 170, 0.2)' }}>
-              <Toolbar variant="dense">
-                <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2, color: '#a1a1aa' }}>
-                  <AppsIcon />
-                </IconButton>
-                <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2, color: '#a1a1aa' }}>
-                  <ReplyIcon />
-                </IconButton>
-                <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
-                  Просмотр
-                </Typography>
-                <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
-                  Управление
-                </Typography>
-              </Toolbar>
-            </AppBar>
-            <AppBar
-              position="static"
-              sx={{ backgroundColor: 'rgb(32, 33, 36)', borderTop: '1px solid rgba(161, 161, 170, 0.2)', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}
-            >
-              <Toolbar variant="dense">
-                <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
-                  Название проекта
-                </Typography>
-              </Toolbar>
-            </AppBar>
-          </Grid>
+      <RowContext.Provider value={data}>
+        <AppContainer>
+          <CssBaseline />
+          <Grid container spacing={0}>
+            {/* Header */}
+            <Grid item xs={12}>
+              <AppBar position="static" sx={{ backgroundColor: 'rgb(32, 33, 36)', borderTop: '1px solid rgba(161, 161, 170, 0.2)' }}>
+                <Toolbar variant="dense">
+                  <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2, color: '#a1a1aa' }}>
+                    <AppsIcon />
+                  </IconButton>
+                  <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2, color: '#a1a1aa' }}>
+                    <ReplyIcon />
+                  </IconButton>
+                  <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
+                    Просмотр
+                  </Typography>
+                  <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
+                    Управление
+                  </Typography>
+                </Toolbar>
+              </AppBar>
+              <AppBar
+                position="static"
+                sx={{ backgroundColor: 'rgb(32, 33, 36)', borderTop: '1px solid rgba(161, 161, 170, 0.2)', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}
+              >
+                <Toolbar variant="dense">
+                  <Typography variant="h6" color="inherit" component="div" sx={{ mr: 2, color: '#a1a1aa', fontSize: 14, fontWeight: 'bold' }}>
+                    Название проекта
+                  </Typography>
+                </Toolbar>
+              </AppBar>
+            </Grid>
 
-          {/* Sidebar */}
-          <Grid item xs={1.5} sx={{ color: '#a1a1aa', borderRight: '1px solid rgba(161, 161, 170, 0.2)', height: 'calc(100vh - 99px)', paddingTop: '10px !important' }}>
-            {/* Sidebar content */}
-            <List sx={{ padding: 0 }}>
-              {sidebar_titles.map((text) => (
-                <ListItem key={text} disablePadding>
-                  <ListItemButton key={text} sx={{ py: 0, minHeight: 32, color: 'rgba(255,255,255,.8)', paddingRight: '9px', paddingLeft: '22px' }}>
-                    <ListItemIcon sx={{ color: 'inherit' }}>
-                      <DeveloperBoardIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={text} primaryTypographyProps={{ fontSize: 14, fontWeight: 'bold' }} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
+            {/* Sidebar */}
+            <Grid item xs={1.5} sx={{ color: '#a1a1aa', borderRight: '1px solid rgba(161, 161, 170, 0.2)', height: 'calc(100vh - 99px)', paddingTop: '10px !important' }}>
+              {/* Sidebar content */}
+              <List sx={{ padding: 0 }}>
+                {sidebar_titles.map((text) => (
+                  <ListItem key={text} disablePadding>
+                    <ListItemButton key={text} sx={{ py: 0, minHeight: 32, color: 'rgba(255,255,255,.8)', paddingRight: '9px', paddingLeft: '22px' }}>
+                      <ListItemIcon sx={{ color: 'inherit' }}>
+                        <DeveloperBoardIcon />
+                      </ListItemIcon>
+                      <ListItemText primary={text} primaryTypographyProps={{ fontSize: 14, fontWeight: 'bold' }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+            {/* Main content */}
+            <Grid item xs={10.5}>
+              {isLoading ? <p>Loading data...</p> : error ? <p>Error: {'error'}</p> : data ? <Rows data={data} /> : <p>No data available</p>}
+              {customError && <p>Error: {customError}</p>}
+            </Grid>
           </Grid>
-          {/* Main content */}
-          <Grid item xs={10.5}>
-            {isLoading ? <p>Loading data...</p> : error ? <p>Error: {'error'}</p> : data ? <BasicTable rows={data} /> : <p>No data available</p>}
-            {customError && <p>Error: {customError}</p>}
-          </Grid>
-        </Grid>
-      </AppContainer>
+        </AppContainer>
+      </RowContext.Provider>
     </ThemeProvider>
   );
 }
