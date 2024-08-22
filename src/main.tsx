@@ -262,13 +262,6 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   );
 };
 
-// {
-//   "id": 140037,
-//   "rowName": "8de3c6c5-ff9a-4463-9b7f-26c708268f78"
-// }
-// с этого ендпоинта приходит весь список
-// http://185.244.172.108:8081/v1/outlay-rows/entity/140037/row/list
-
 export const constructionApi = createApi({
   reducerPath: 'constructionApi',
   // baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
