@@ -3,13 +3,12 @@ import { Provider } from 'react-redux';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
-import FeedIcon from '@mui/icons-material/Feed';
 import IconButton from '@mui/material/IconButton';
 import AppsIcon from '@mui/icons-material/Apps';
 import ReplyIcon from '@mui/icons-material/Reply';
@@ -19,7 +18,6 @@ import ListItem from '@mui/material/ListItem';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
@@ -29,71 +27,217 @@ const AppContainer = styled.div`
   height: 100vh;
 `;
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
+// TABLE
+const StyledTableContainer = styled(Paper)`
+  border-radius: 0px;
+`;
 
-const rows = [createData('Eclair', 262, 16.0, 24, 6.0), createData('Cupcake', 305, 3.7, 67, 4.3), createData('Gingerbread', 356, 16.0, 49, 3.9)];
+const StyledTable = styled(Table)`
+  min-width: 650px;
+  background-color: rgb(32, 33, 36);
+  width: 100%;
+`;
 
-function BasicTable() {
+const StyledTableHead = styled(TableHead)``;
+
+// it selects the last cell and header cell within the table row.
+const StyledTableRow = styled(TableRow)`
+  &:last-child td,
+  &:last-child th {
+    border: 0;
+  }
+`;
+
+const StyledTableCell = styled(TableCell)`
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: bold !important;
+  border-bottom: 1px solid rgba(161, 161, 170, 0.2) !important;
+`;
+
+const StyledTableCellRight = styled(TableCell)`
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(161, 161, 170, 0.2) !important;
+  font-weight: bold !important;
+  text-align: right;
+  width: 200px;
+`;
+
+const StyledTableFirstCellHeader = styled(StyledTableCell)`
+  color: #a1a1aa !important;
+  width: 100px;
+`;
+
+const StyledTableCellHeader = styled(StyledTableCell)`
+  color: #a1a1aa !important;
+  width: 200px;
+`;
+
+const StyledCell = styled(TableCell)`
+  color: #a1a1aa !important;
+  font-weight: bold !important;
+  border-bottom: 1px solid rgba(161, 161, 170, 0.2) !important;
+`;
+
+const StyledTableCellIconHeader = styled(StyledTableCell)`
+  color: #7890b2 !important;
+  width: 100px;
+`;
+
+const StyledCenterWrapper = styled.div`
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const StyledSVG = styled.svg`
+  width: 24px;
+  height: 24px;
+`;
+
+const CustomFeedIcon = () => {
   return (
-    <TableContainer component={Paper} sx={{ borderRadius: '0px' }}>
-      <Table sx={{ minWidth: 650, backgroundColor: 'rgb(32, 33, 36)' }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>Уровень</TableCell>
-            <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>Наименование работ</TableCell>
-            <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }} align="right">
-              Основная з/п
-            </TableCell>
-            <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }} align="right">
-              Оборудование
-            </TableCell>
-            <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }} align="right">
-              Накладные расходы
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.name} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-              <TableCell component="th" scope="row" sx={{ color: '#7890b2 !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>
-                <FeedIcon />
-              </TableCell>
-              <TableCell sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>
-                {row.name} {row.calories}
-              </TableCell>
-              <TableCell align="right" sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>
-                {row.fat}
-              </TableCell>
-              <TableCell align="right" sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>
-                {row.carbs}
-              </TableCell>
-              <TableCell align="right" sx={{ color: '#a1a1aa !important', borderBottom: '1px solid rgba(161, 161, 170, 0.2)' }}>
-                {row.protein}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <StyledCenterWrapper>
+      <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
+      </StyledSVG>
+    </StyledCenterWrapper>
   );
+};
+
+let sidebar_titles: string[] = [
+  'По проекту',
+  'Обьекты',
+  'РД',
+  'МТО',
+  'СМР',
+  'График',
+  'МиМ',
+  'Рабочие',
+  'Капвложения',
+  'Бюджет',
+  'Финансирование',
+  'Панорамы',
+  'Камеры',
+  'Поручения',
+  'Контрагенты',
+];
+
+const RowContext = createContext(null);
+
+type DynamicObject = {
+  [key: string]: string | number | boolean | object | any;
+};
+
+interface TableProps {
+  rows: DynamicObject[];
 }
 
-interface OutlayRow {
-  child: string[];
-  equipmentCosts: number;
-  estimatedProfit: number;
-  id: number;
-  machineOperatorSalary: number;
-  mainCosts: number;
-  materials: number;
-  mimExploitation: number;
-  overheads: number;
-  rowName: string;
-  salary: number;
-  supportCosts: number;
-  total: number;
+// эти элементы не числятся как дети ни в одном другом обьекте в массиве child
+function filterFirstLevelRows(rows: DynamicObject[]) {
+  const childValues = new Set(rows.flatMap((row) => row.child));
+  return rows.filter((row) => !childValues.has(row.id));
+}
+
+function filterInitialState(initialState: any[], future: any[]) {
+  return initialState.filter((item) => future.includes(item.id));
+}
+
+type DataType = Array<object> | number;
+
+const Rows: React.FC<{ data: DataType }> = ({ data }) => {
+  const items = useContext(RowContext);
+
+  // Рендерим список всех комментов первого уровня - то есть без родителя
+  if (Array.isArray(data)) {
+    const firstLevelObjects = filterFirstLevelRows(data);
+    return (
+      <StyledTableContainer>
+        <StyledTable aria-label="simple table">
+          <StyledTableHead>
+            <StyledTableRow>
+              <StyledTableFirstCellHeader>Уровень</StyledTableFirstCellHeader>
+              <StyledCell>Наименование работ</StyledCell>
+              <StyledTableCellHeader>Основная з/п</StyledTableCellHeader>
+              <StyledTableCellHeader>Оборудование</StyledTableCellHeader>
+              <StyledTableCellHeader>Накладные расходы</StyledTableCellHeader>
+              <StyledTableCellHeader>Сметная прибыль</StyledTableCellHeader>
+            </StyledTableRow>
+          </StyledTableHead>
+          <TableBody>
+            {firstLevelObjects.map(({ child, id, ...other }) => (
+              <Row key={id} {...other}>
+                <Rows data={id} />
+              </Row>
+            ))}
+          </TableBody>
+        </StyledTable>
+      </StyledTableContainer>
+    );
+  }
+
+  const findChild = useCallback((id: number) => items?.find(({ id }) => data === id), [items]);
+
+  let found = findChild(data);
+
+  const filteredInitialState = filterInitialState(items, found?.child);
+
+  // Calculate progressive left padding based on depth
+  const getLeftPadding = (depth: number) => {
+    console.log(`${depth * 16}px`);
+    return `${depth * 16}px`; // Adjust multiplier as needed
+  };
+
+  // 2-ой 3-ий вложенный коммент итд
+  return (
+    <>
+      {filteredInitialState.map(({ child, id, ...other }, index) => (
+        <React.Fragment key={id}>
+          <StyledTableRow key={id}>
+            <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
+              <CustomFeedIcon />
+            </StyledTableCellIconHeader>
+            <StyledTableCell style={{ minWidth: '400px' }}>{id}</StyledTableCell>
+            <StyledTableCellRight>{id}</StyledTableCellRight>
+            <StyledTableCellRight>{id}</StyledTableCellRight>
+            <StyledTableCellRight>{id}</StyledTableCellRight>
+            <StyledTableCellRight>{id}</StyledTableCellRight>
+          </StyledTableRow>
+          <Rows data={id} />
+        </React.Fragment>
+      ))}
+    </>
+  );
+};
+
+const Row = ({ children, equipmentCosts, child, id }) => {
+  return (
+    <React.Fragment key={id}>
+      <StyledTableRow key={id}>
+        <StyledTableCellIconHeader style={{ padding: '0px' }}>
+          <CustomFeedIcon />
+        </StyledTableCellIconHeader>
+        <StyledTableCell style={{ width: '400px' }}>{equipmentCosts}</StyledTableCell>
+        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
+        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
+        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
+        <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
+      </StyledTableRow>
+      {children}
+    </React.Fragment>
+  );
+};
+
+function BasicTable({ rows }: TableProps) {
+  console.log(rows, 'rows');
+  const firstLevelObjects = filterFirstLevelRows(rows);
+  console.log(firstLevelObjects, 'firstLevelObjects');
+  return (
+    <RowContext.Provider value={rows}>
+      <Rows data={rows} />
+    </RowContext.Provider>
+  );
 }
 
 // {
@@ -119,36 +263,6 @@ export const constructionApi = createApi({
 
 export const { useGetConstructionQuery } = constructionApi;
 
-export default function App() {
-  const { data, error, isLoading } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
-  const [customError, setCustomError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (error) {
-      setCustomError('error');
-    } else {
-      setCustomError(null);
-    }
-  }, [error]);
-
-  if (data) console.log(data);
-
-  return (
-    <>
-      {isLoading ? (
-        <p>Loading data...</p>
-      ) : error ? (
-        <p>Error: {'error'}</p>
-      ) : data ? (
-        data.map((i: OutlayRow) => <div key={i.equipmentCosts}>{i.equipmentCosts}</div>)
-      ) : (
-        <p>No data available</p>
-      )}
-      {customError && <p>Error: {customError}</p>}
-    </>
-  );
-}
-
 export const store = configureStore({
   reducer: {
     [constructionApi.reducerPath]: constructionApi.reducer,
@@ -158,7 +272,7 @@ export const store = configureStore({
 
 setupListeners(store.dispatch);
 
-function Layout() {
+function App() {
   const { data, error, isLoading } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
   const [customError, setCustomError] = useState<string | null>(null);
 
@@ -169,8 +283,6 @@ function Layout() {
       setCustomError(null);
     }
   }, [error]);
-
-  if (data) console.log(data);
 
   const theme = createTheme({
     palette: {
@@ -222,23 +334,7 @@ function Layout() {
           <Grid item xs={1.5} sx={{ color: '#a1a1aa', borderRight: '1px solid rgba(161, 161, 170, 0.2)', height: 'calc(100vh - 99px)', paddingTop: '10px !important' }}>
             {/* Sidebar content */}
             <List sx={{ padding: 0 }}>
-              {[
-                'По проекту',
-                'Обьекты',
-                'РД',
-                'МТО',
-                'СМР',
-                'График',
-                'МиМ',
-                'Рабочие',
-                'Капвложения',
-                'Бюджет',
-                'Финансирование',
-                'Панорамы',
-                'Камеры',
-                'Поручения',
-                'Контрагенты',
-              ].map((text) => (
+              {sidebar_titles.map((text) => (
                 <ListItem key={text} disablePadding>
                   <ListItemButton key={text} sx={{ py: 0, minHeight: 32, color: 'rgba(255,255,255,.8)', paddingRight: '9px', paddingLeft: '22px' }}>
                     <ListItemIcon sx={{ color: 'inherit' }}>
@@ -252,16 +348,7 @@ function Layout() {
           </Grid>
           {/* Main content */}
           <Grid item xs={10.5}>
-            <BasicTable />
-            {isLoading ? (
-              <p>Loading data...</p>
-            ) : error ? (
-              <p>Error: {'error'}</p>
-            ) : data ? (
-              data.map((i: OutlayRow) => <div key={i.equipmentCosts}>{i.equipmentCosts}</div>)
-            ) : (
-              <p>No data available</p>
-            )}
+            {isLoading ? <p>Loading data...</p> : error ? <p>Error: {'error'}</p> : data ? <BasicTable rows={data} /> : <p>No data available</p>}
             {customError && <p>Error: {customError}</p>}
           </Grid>
         </Grid>
@@ -272,6 +359,6 @@ function Layout() {
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
-    <Layout />
+    <App />
   </Provider>
 );
