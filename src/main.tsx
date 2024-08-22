@@ -120,7 +120,7 @@ type ObjectType = {
   [key: string]: any;
 };
 
-// эти элементы не числятся как дети ни в одном другом обьекте в массиве child
+// эти элементы не числятся как потомки ни в одном другом обьекте в массиве child
 function filterFirstLevelRows(rows: any) {
   const childValues = new Set(rows.flatMap((row: any) => row.child));
   return rows.filter((row: ObjectType) => !childValues.has(row.id));
@@ -263,8 +263,8 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
 export const constructionApi = createApi({
   reducerPath: 'constructionApi',
-  // baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
+  // baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),
   endpoints: (builder) => ({
     getConstruction: builder.query({
       query: (name) => name,
