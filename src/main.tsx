@@ -142,8 +142,8 @@ function generateRandomInteger(min: number, max: number) {
 type DataType = Array<object> | number;
 
 interface CustomFeedIconProps {
-  parentId: number;
-  onClick: (parentId: number) => void;
+  parentId: number | undefined;
+  onClick: (parentId: number | undefined) => void;
 }
 
 const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) => {
