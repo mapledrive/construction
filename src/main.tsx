@@ -135,13 +135,18 @@ function filterInitialState(initialState: ObjectType[] | null, future: any[]) {
   return initialState?.filter((item: any) => future.includes(item.id));
 }
 
-function generateRandomInteger(min, max) {
+function generateRandomInteger(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 type DataType = Array<object> | number;
 
-const CustomFeedIcon = ({ parentId, onClick }) => {
+interface CustomFeedIconProps {
+  parentId: number;
+  onClick: (parentId: number) => void;
+}
+
+const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) => {
   return (
     <StyledCenterWrapper onClick={() => onClick(parentId)}>
       <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -156,8 +161,8 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
   const [addChildItem] = useAddChildItemMutation();
 
-  const handleAddChild = (parentId) => {
-    console.log('ye');
+  const handleAddChild = (parentId: number) => {
+    console.log('Добавил потомка элементу ', parentId);
     const newItem = {
       // Set the initial values for the new child item
       child: [],
