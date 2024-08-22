@@ -89,22 +89,13 @@ const StyledCenterWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 `;
 
 const StyledSVG = styled.svg`
   width: 24px;
   height: 24px;
 `;
-
-const CustomFeedIcon = () => {
-  return (
-    <StyledCenterWrapper>
-      <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
-      </StyledSVG>
-    </StyledCenterWrapper>
-  );
-};
 
 let sidebar_titles: string[] = [
   'По проекту',
@@ -144,10 +135,60 @@ function filterInitialState(initialState: ObjectType[] | null, future: any[]) {
   return initialState?.filter((item: any) => future.includes(item.id));
 }
 
+function generateRandomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 type DataType = Array<object> | number;
+
+const CustomFeedIcon = ({ parentId, onClick }) => {
+  return (
+    <StyledCenterWrapper onClick={() => onClick(parentId)}>
+      <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
+      </StyledSVG>
+    </StyledCenterWrapper>
+  );
+};
 
 const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   const items = useContext(RowContext);
+
+  const [addChildItem] = useAddChildItemMutation();
+
+  const handleAddChild = (parentId) => {
+    console.log('ye');
+    const newItem = {
+      // Set the initial values for the new child item
+      child: [],
+      equipmentCosts: 0,
+      estimatedProfit: 0,
+      id: generateRandomInteger(50, 200),
+      machineOperatorSalary: 0,
+      mainCosts: 0,
+      materials: 0,
+      mimExploitation: 0,
+      overheads: 0,
+      rowName: 'none',
+      salary: 0,
+      supportCosts: 0,
+      total: 0,
+    };
+
+    addChildItem(newItem)
+      .then((response) => {
+        // Handle the response from the API (if you want to send it later)
+        console.log('Child item added successfully:', response.data);
+        // Update the local state or UI as needed
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error('Error adding child item:', error);
+      });
+
+    // Update the cache data locally
+    // refetch();
+  };
 
   // Рендерим список всех комментов первого уровня - то есть без родителя
   if (Array.isArray(data)) {
@@ -167,7 +208,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
           </StyledTableHead>
           <TableBody>
             {firstLevelObjects.map(({ child, id, ...other }) => (
-              <Row key={id} {...other}>
+              <Row key={id} {...other} handleAddChild={handleAddChild}>
                 <Rows data={id} />
               </Row>
             ))}
@@ -185,10 +226,9 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
   const filteredInitialState = filterInitialState(items, found?.child);
 
-  // Calculate progressive left padding based on depth
+  // Вычислить левый паддинг прогрессивно на основе depth
   const getLeftPadding = (depth: number) => {
-    console.log(`${depth * 16}px`);
-    return `${depth * 16}px`; // Adjust multiplier as needed
+    return `${depth * 16}px`;
   };
 
   // 2-ой 3-ий вложенный коммент итд
@@ -198,7 +238,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
         <React.Fragment key={id}>
           <StyledTableRow key={id}>
             <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
-              <CustomFeedIcon />
+              <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
             </StyledTableCellIconHeader>
             <StyledTableCell style={{ minWidth: '400px' }}>{id}</StyledTableCell>
             <StyledTableCellRight>{id}</StyledTableCellRight>
@@ -217,14 +257,15 @@ interface RowProps {
   children: React.ReactNode;
   equipmentCosts?: number;
   id?: number;
+  handleAddChild: any;
 }
 
-const Row: React.FC<RowProps> = ({ children, equipmentCosts, id }) => {
+const Row: React.FC<RowProps> = ({ children, equipmentCosts, id, handleAddChild }) => {
   return (
     <React.Fragment key={id}>
       <StyledTableRow key={id}>
         <StyledTableCellIconHeader style={{ padding: '0px' }}>
-          <CustomFeedIcon />
+          <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
         </StyledTableCellIconHeader>
         <StyledTableCell style={{ width: '400px' }}>{equipmentCosts}</StyledTableCell>
         <StyledTableCellRight>{equipmentCosts}</StyledTableCellRight>
@@ -262,17 +303,22 @@ export const constructionApi = createApi({
   reducerPath: 'constructionApi',
   // baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
   baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),
-
   endpoints: (builder) => ({
     getConstruction: builder.query({
       query: (name) => name,
-      // Кэшируем данные бесконечно
-      keepUnusedDataFor: Infinity,
+      keepUnusedDataFor: Infinity, // Кэшируем данные бесконечно
+    }),
+    addChildItem: builder.mutation({
+      query: (newItem) => ({
+        url: '/api/add-child-item', // Replace with your actual API endpoint
+        method: 'POST',
+        body: newItem,
+      }),
     }),
   }),
 });
 
-export const { useGetConstructionQuery } = constructionApi;
+export const { useGetConstructionQuery, useAddChildItemMutation } = constructionApi;
 
 export const store = configureStore({
   reducer: {
