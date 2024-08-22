@@ -130,14 +130,18 @@ interface TableProps {
   rows: any;
 }
 
+type ObjectType = {
+  [key: string]: any;
+};
+
 // эти элементы не числятся как дети ни в одном другом обьекте в массиве child
 function filterFirstLevelRows(rows: any) {
   const childValues = new Set(rows.flatMap((row: any) => row.child));
-  return rows.filter((row) => !childValues.has(row.id));
+  return rows.filter((row: ObjectType) => !childValues.has(row.id));
 }
 
-function filterInitialState(initialState: any[], future: any[]) {
-  return initialState.filter((item: any) => future.includes(item.id));
+function filterInitialState(initialState: ObjectType[] | null, future: any[]) {
+  return initialState?.filter((item: any) => future.includes(item.id));
 }
 
 type DataType = Array<object> | number;
@@ -147,7 +151,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
   // Рендерим список всех комментов первого уровня - то есть без родителя
   if (Array.isArray(data)) {
-    const firstLevelObjects = filterFirstLevelRows(data);
+    const firstLevelObjects: ObjectType[] = filterFirstLevelRows(data);
     return (
       <StyledTableContainer>
         <StyledTable aria-label="simple table">
@@ -173,11 +177,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     );
   }
 
-  type ObjectType = {
-    [key: string]: any;
-  };
-
-  const findChild = (data: number, items?: ObjectType[]): ObjectType | null => {
+  const findChild = (data: number, items?: ObjectType[] | null | undefined): ObjectType | null => {
     return items?.find((item: ObjectType) => data === item.id) ?? null;
   };
 
@@ -194,7 +194,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   // 2-ой 3-ий вложенный коммент итд
   return (
     <>
-      {filteredInitialState.map(({ child, id, ...other }, index) => (
+      {filteredInitialState?.map(({ child, id, ...other }, index) => (
         <React.Fragment key={id}>
           <StyledTableRow key={id}>
             <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
@@ -215,8 +215,8 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
 interface RowProps {
   children: React.ReactNode;
-  equipmentCosts: number;
-  id: number;
+  equipmentCosts?: number;
+  id?: number;
 }
 
 const Row: React.FC<RowProps> = ({ children, equipmentCosts, id }) => {
