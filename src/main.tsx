@@ -117,10 +117,6 @@ let sidebar_titles: string[] = [
 
 const RowContext = createContext(null);
 
-interface TableProps {
-  rows: any;
-}
-
 type ObjectType = {
   [key: string]: any;
 };
