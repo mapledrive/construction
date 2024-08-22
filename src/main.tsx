@@ -177,7 +177,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     );
   }
 
-  const findChild = useCallback((id: number) => items?.find(({ id }) => data === id), [items]);
+  const findChild = (data: number) => items?.find((item) => data === item.id);
 
   let found = findChild(data);
 
@@ -211,7 +211,14 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   );
 };
 
-const Row = ({ children, equipmentCosts, child, id }) => {
+interface RowProps {
+  children: React.ReactNode;
+  equipmentCosts: number;
+  id: number;
+  child: number[];
+}
+
+const Row: React.FC<RowProps> = ({ children, equipmentCosts, child, id }) => {
   return (
     <React.Fragment key={id}>
       <StyledTableRow key={id}>
