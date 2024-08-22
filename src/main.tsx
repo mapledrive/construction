@@ -40,7 +40,6 @@ const StyledTable = styled(Table)`
 
 const StyledTableHead = styled(TableHead)``;
 
-// it selects the last cell and header cell within the table row.
 const StyledTableRow = styled(TableRow)`
   &:last-child td,
   &:last-child th {
@@ -157,10 +156,13 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
   const [addChildItem] = useAddChildItemMutation();
 
+  const handleDoubleEdit = (parentId: number) => {
+    console.log('Button double-clicked!', parentId);
+  };
+
   const handleAddChild = (parentId: number) => {
     console.log('Добавил потомка элементу ', parentId);
     const newItem = {
-      // Set the initial values for the new child item
       child: [],
       equipmentCosts: 0,
       estimatedProfit: 0,
@@ -178,16 +180,13 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
     addChildItem(newItem)
       .then((response) => {
-        // Handle the response from the API (if you want to send it later)
         console.log('Child item added successfully:', response.data);
-        // Update the local state or UI as needed
       })
       .catch((error) => {
-        // Handle errors
         console.error('Error adding child item:', error);
       });
 
-    // Update the cache data locally
+    // Обновить кэш локально
     // refetch();
   };
 
@@ -210,7 +209,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
           <TableBody>
             {firstLevelObjects.map(({ id }) => (
               <React.Fragment key={id}>
-                <StyledTableRow>
+                <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
                   <StyledTableCellIconHeader style={{ padding: '0px' }}>
                     <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
                   </StyledTableCellIconHeader>
@@ -245,7 +244,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     <>
       {filteredInitialState?.map(({ child, id, ...other }, index) => (
         <React.Fragment key={id}>
-          <StyledTableRow>
+          <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
             <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
               <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
             </StyledTableCellIconHeader>
@@ -278,10 +277,28 @@ export const constructionApi = createApi({
         body: newItem,
       }),
     }),
+    updateRow: builder.mutation({
+      query: (updatePayload) => ({
+        url: `v1/outlay-rows/entity/140037/row/${`0`}/update`,
+        method: 'PUT',
+        body: updatePayload.data,
+      }),
+      async onQueryStarted(args, { queryFulfilled, dispatch }) {
+        try {
+          const result = await queryFulfilled;
+          // Handle successful update (e.g., update local state, refresh data)
+          console.log('Update successful:', result);
+          dispatch(constructionApi.util.resetApiState()); // Optional: Reset API state for a fresh start
+        } catch (error) {
+          // Handle update errors (e.g., display error message, retry)
+          console.error('Update failed:', error);
+        }
+      },
+    }),
   }),
 });
 
-export const { useGetConstructionQuery, useAddChildItemMutation } = constructionApi;
+export const { useGetConstructionQuery, useAddChildItemMutation, useUpdateRowMutation } = constructionApi;
 
 export const store = configureStore({
   reducer: {
