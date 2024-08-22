@@ -212,7 +212,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
             </StyledTableRow>
           </StyledTableHead>
           <TableBody>
-            {firstLevelObjects.map(({ child, id, ...other }) => (
+            {firstLevelObjects.map(({ id }) => (
               <React.Fragment key={id}>
                 <StyledTableRow>
                   <StyledTableCellIconHeader style={{ padding: '0px' }}>
@@ -265,13 +265,6 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     </>
   );
 };
-
-interface RowProps {
-  children: React.ReactNode;
-  equipmentCosts?: number;
-  id?: number;
-  handleAddChild: any;
-}
 
 function BasicTable({ rows }: TableProps) {
   console.log(rows, 'rows');
