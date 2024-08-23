@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { FC, useState, useEffect, createContext, useContext } from 'react';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -116,30 +116,44 @@ let sidebar_titles: string[] = [
 
 const RowContext = createContext(null);
 
-type ObjectType = {
-  [key: string]: any;
-};
-
 // эти элементы не числятся как потомки ни в одном другом обьекте в массиве child
-function filterFirstLevelRows(rows: any) {
-  const childValues = new Set(rows.flatMap((row: any) => row.child));
-  return rows.filter((row: ObjectType) => !childValues.has(row.id));
+function filterFirstLevelRows(rows: Task[]) {
+  const childValues = new Set(rows.flatMap((row: Task) => row.child));
+  return rows.filter((row: Task) => !childValues.has(row.id));
 }
 
-function filterInitialState(initialState: ObjectType[] | null, future: any[]) {
-  return initialState?.filter((item: any) => future.includes(item.id));
+function filterInitialState(initialState: Task[] | null, future: TaskChildren) {
+  return initialState?.filter((item: Task) => future?.includes(item.id));
 }
 
 function generateRandomInteger(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-type DataType = Array<object> | number;
-
 interface CustomFeedIconProps {
   parentId: number | undefined;
   onClick: (parentId: number | undefined) => void;
 }
+
+type TaskChildren = number[] | null | undefined;
+
+interface Task {
+  child?: TaskChildren;
+  equipmentCosts?: number;
+  estimatedProfit?: number;
+  id: number;
+  machineOperatorSalary?: number;
+  mainCosts?: number;
+  materials?: number;
+  mimExploitation?: number;
+  overheads: number;
+  rowName: string;
+  salary?: number;
+  supportCosts?: number;
+  total?: number;
+}
+
+interface AppProps {}
 
 const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) => {
   return (
@@ -151,7 +165,7 @@ const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) =>
   );
 };
 
-const Rows: React.FC<{ data: DataType }> = ({ data }) => {
+const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
   const items = useContext(RowContext);
 
   const [addChildItem] = useAddChildItemMutation();
@@ -192,7 +206,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 
   // Рендерим список всех комментов первого уровня - то есть без родителя
   if (Array.isArray(data)) {
-    const firstLevelObjects: ObjectType[] = filterFirstLevelRows(data);
+    const firstLevelObjects: Task[] = filterFirstLevelRows(data);
     return (
       <StyledTableContainer>
         <StyledTable aria-label="simple table">
@@ -228,8 +242,8 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
     );
   }
 
-  const findChild = (data: number, items?: ObjectType[] | null | undefined): ObjectType | null => {
-    return items?.find((item: ObjectType) => data === item.id) ?? null;
+  const findChild = (data: number, items?: Task[] | null | undefined): Task | null => {
+    return items?.find((item: Task) => data === item.id) ?? null;
   };
 
   let found = findChild(data, items);
@@ -237,7 +251,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   const filteredInitialState = filterInitialState(items, found?.child);
 
   // Вычислить левый паддинг прогрессивно на основе depth
-  const getLeftPadding = (depth: number) => `${depth * 16}px`;
+  const getLeftPadding = (depth: number): string => `${depth * 16}px`;
 
   // 2-ой 3-ий вложенный коммент итд
   return (
@@ -307,7 +321,7 @@ export const store = configureStore({
 
 setupListeners(store.dispatch);
 
-function App() {
+const App: FC<AppProps> = () => {
   const { data, error, isLoading } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
   const [customError, setCustomError] = useState<string | null>(null);
 
@@ -392,7 +406,7 @@ function App() {
       </RowContext.Provider>
     </ThemeProvider>
   );
-}
+};
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
@@ -400,7 +414,7 @@ createRoot(document.getElementById('root')!).render(
   </Provider>
 );
 
-const mock: ObjectType[] = [
+const mock: Task[] = [
   {
     child: [1],
     equipmentCosts: 0,
