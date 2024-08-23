@@ -385,7 +385,6 @@ function App() {
             {/* Main content */}
             <Grid item xs={10.5}>
               {isLoading ? <p>Loading data...</p> : error ? <Rows data={mock} /> : data && data.length > 0 ? <Rows data={data} /> : <Rows data={mock} />}
-              {customError && console.log('Error:', customError)}
             </Grid>
           </Grid>
         </AppContainer>
