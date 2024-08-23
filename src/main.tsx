@@ -207,13 +207,13 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
             </StyledTableRow>
           </StyledTableHead>
           <TableBody>
-            {firstLevelObjects.map(({ id }) => (
+            {firstLevelObjects.map(({ id, rowName }) => (
               <React.Fragment key={id}>
                 <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
                   <StyledTableCellIconHeader style={{ padding: '0px' }}>
                     <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
                   </StyledTableCellIconHeader>
-                  <StyledTableCell style={{ width: '400px' }}>{id}</StyledTableCell>
+                  <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
                   <StyledTableCellRight>{id}</StyledTableCellRight>
                   <StyledTableCellRight>{id}</StyledTableCellRight>
                   <StyledTableCellRight>{id}</StyledTableCellRight>
@@ -242,13 +242,13 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
   // 2-ой 3-ий вложенный коммент итд
   return (
     <>
-      {filteredInitialState?.map(({ child, id, ...other }, index) => (
+      {filteredInitialState?.map(({ child, id, rowName, ...other }, index) => (
         <React.Fragment key={id}>
           <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
             <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
               <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
             </StyledTableCellIconHeader>
-            <StyledTableCell style={{ minWidth: '400px' }}>{id}</StyledTableCell>
+            <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
             <StyledTableCellRight>{id}</StyledTableCellRight>
             <StyledTableCellRight>{id}</StyledTableCellRight>
             <StyledTableCellRight>{id}</StyledTableCellRight>
@@ -264,7 +264,7 @@ const Rows: React.FC<{ data: DataType }> = ({ data }) => {
 export const constructionApi = createApi({
   reducerPath: 'constructionApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
-  // baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),
+  // baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),  // локальный сервер
   endpoints: (builder) => ({
     getConstruction: builder.query({
       query: (name) => name,
@@ -332,7 +332,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <RowContext.Provider value={data}>
+      <RowContext.Provider value={data && data.length > 0 ? data : mock}>
         <AppContainer>
           <CssBaseline />
           <Grid container spacing={0}>
@@ -384,8 +384,8 @@ function App() {
             </Grid>
             {/* Main content */}
             <Grid item xs={10.5}>
-              {isLoading ? <p>Loading data...</p> : error ? <p>Error: {'error'}</p> : data ? <Rows data={data} /> : <p>No data available</p>}
-              {customError && <p>Error: {customError}</p>}
+              {isLoading ? <p>Loading data...</p> : error ? <Rows data={mock} /> : data && data.length > 0 ? <Rows data={data} /> : <Rows data={mock} />}
+              {customError && console.log('Error:', customError)}
             </Grid>
           </Grid>
         </AppContainer>
@@ -399,3 +399,81 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </Provider>
 );
+
+const mock: ObjectType[] = [
+  {
+    child: [1],
+    equipmentCosts: 0,
+    estimatedProfit: 0,
+    id: 0,
+    machineOperatorSalary: 0,
+    mainCosts: 0,
+    materials: 0,
+    mimExploitation: 0,
+    overheads: 0,
+    rowName: 'Южная строительная площадка',
+    salary: 0,
+    supportCosts: 0,
+    total: 0,
+  },
+  {
+    child: [2, 3],
+    equipmentCosts: 1,
+    estimatedProfit: 1,
+    id: 1,
+    machineOperatorSalary: 1,
+    mainCosts: 1,
+    materials: 1,
+    mimExploitation: 1,
+    overheads: 1,
+    rowName: 'Фундаментальные работы',
+    salary: 1,
+    supportCosts: 1,
+    total: 1,
+  },
+  {
+    child: [],
+    equipmentCosts: 2,
+    estimatedProfit: 2,
+    id: 2,
+    machineOperatorSalary: 2,
+    mainCosts: 2,
+    materials: 2,
+    mimExploitation: 2,
+    overheads: 2,
+    rowName: 'Статья работы №1',
+    salary: 2,
+    supportCosts: 2,
+    total: 2,
+  },
+  {
+    child: [],
+    equipmentCosts: 3,
+    estimatedProfit: 3,
+    id: 3,
+    machineOperatorSalary: 3,
+    mainCosts: 3,
+    materials: 3,
+    mimExploitation: 3,
+    overheads: 3,
+    rowName: 'Статья работы №2',
+    salary: 3,
+    supportCosts: 3,
+    total: 3,
+  },
+  {
+    child: [],
+    equipmentCosts: 4,
+    estimatedProfit: 4,
+    id: 4,
+    machineOperatorSalary: 4,
+    mainCosts: 4,
+    materials: 4,
+    mimExploitation: 4,
+    overheads: 4,
+    rowName: 'Отчеты',
+    salary: 4,
+    supportCosts: 4,
+    total: 4,
+  },
+];
