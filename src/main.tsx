@@ -21,6 +21,8 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { red } from '@mui/material/colors';
 
 const AppContainer = styled.div`
   background-color: rgb(32, 33, 36);
@@ -156,19 +158,50 @@ interface Task {
 interface AppProps {}
 
 const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) => {
+  const [deleteRow] = useDeleteRowMutation();
   return (
-    <StyledCenterWrapper onClick={() => onClick(parentId)}>
-      <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
-      </StyledSVG>
-    </StyledCenterWrapper>
+    <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center', cursor: 'pointer' }}>
+      <StyledCenterWrapper onClick={() => onClick(parentId)}>
+        <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
+        </StyledSVG>
+      </StyledCenterWrapper>
+      <StyledCenterWrapper onClick={() => deleteRow(parentId)}>
+        <DeleteIcon sx={{ color: red[500] }} />
+      </StyledCenterWrapper>
+    </div>
   );
 };
 
 const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
   const items = useContext(RowContext);
-
+  const { refetch } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
   const [addChildItem] = useAddChildItemMutation();
+  const [newRow, setNewItem] = useState('');
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (newRow) {
+      const newItem = {
+        child: [],
+        equipmentCosts: 0,
+        estimatedProfit: 0,
+        id: generateRandomInteger(50, 200),
+        machineOperatorSalary: 0,
+        mainCosts: 0,
+        materials: 0,
+        mimExploitation: 0,
+        overheads: 0,
+        rowName: newRow,
+        salary: 0,
+        supportCosts: 0,
+        total: 0,
+      };
+      addChildItem(newItem);
+      setNewItem('');
+      refetch();
+    }
+  }
 
   const handleDoubleEdit = (parentId: number) => {
     console.log('Button double-clicked!', parentId);
@@ -208,37 +241,43 @@ const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
   if (Array.isArray(data)) {
     const firstLevelObjects: Task[] = filterFirstLevelRows(data);
     return (
-      <StyledTableContainer>
-        <StyledTable aria-label="simple table">
-          <StyledTableHead>
-            <StyledTableRow>
-              <StyledTableFirstCellHeader>Уровень</StyledTableFirstCellHeader>
-              <StyledCell>Наименование работ</StyledCell>
-              <StyledTableCellHeader>Основная з/п</StyledTableCellHeader>
-              <StyledTableCellHeader>Оборудование</StyledTableCellHeader>
-              <StyledTableCellHeader>Накладные расходы</StyledTableCellHeader>
-              <StyledTableCellHeader>Сметная прибыль</StyledTableCellHeader>
-            </StyledTableRow>
-          </StyledTableHead>
-          <TableBody>
-            {firstLevelObjects.map(({ id, rowName }) => (
-              <React.Fragment key={id}>
-                <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
-                  <StyledTableCellIconHeader style={{ padding: '0px' }}>
-                    <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
-                  </StyledTableCellIconHeader>
-                  <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
-                  <StyledTableCellRight>{id}</StyledTableCellRight>
-                  <StyledTableCellRight>{id}</StyledTableCellRight>
-                  <StyledTableCellRight>{id}</StyledTableCellRight>
-                  <StyledTableCellRight>{id}</StyledTableCellRight>
-                </StyledTableRow>
-                <Rows data={id} />
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </StyledTable>
-      </StyledTableContainer>
+      <>
+        <form onSubmit={handleSubmit}>
+          <input type="text" value={newRow} onChange={(e) => setNewItem(e.target.value)} placeholder="Наименование" />
+          <button type="submit">Add</button>
+        </form>
+        <StyledTableContainer>
+          <StyledTable aria-label="simple table">
+            <StyledTableHead>
+              <StyledTableRow>
+                <StyledTableFirstCellHeader>Уровень</StyledTableFirstCellHeader>
+                <StyledCell>Наименование работ</StyledCell>
+                <StyledTableCellHeader>Основная з/п</StyledTableCellHeader>
+                <StyledTableCellHeader>Оборудование</StyledTableCellHeader>
+                <StyledTableCellHeader>Накладные расходы</StyledTableCellHeader>
+                <StyledTableCellHeader>Сметная прибыль</StyledTableCellHeader>
+              </StyledTableRow>
+            </StyledTableHead>
+            <TableBody>
+              {firstLevelObjects.map(({ id, rowName }) => (
+                <React.Fragment key={id}>
+                  <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
+                    <StyledTableCellIconHeader style={{ padding: '0px' }}>
+                      <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+                    </StyledTableCellIconHeader>
+                    <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
+                    <StyledTableCellRight>{id}</StyledTableCellRight>
+                    <StyledTableCellRight>{id}</StyledTableCellRight>
+                    <StyledTableCellRight>{id}</StyledTableCellRight>
+                    <StyledTableCellRight>{id}</StyledTableCellRight>
+                  </StyledTableRow>
+                  <Rows data={id} />
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </StyledTable>
+        </StyledTableContainer>
+      </>
     );
   }
 
@@ -279,9 +318,11 @@ export const constructionApi = createApi({
   reducerPath: 'constructionApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://185.244.172.108:8081/' }),
   // baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:5000/' }),  // локальный сервер
+  tagTypes: ['Task', 'OutlayRows'],
   endpoints: (builder) => ({
     getConstruction: builder.query({
       query: (name) => name,
+      providesTags: () => ['OutlayRows'],
       keepUnusedDataFor: Infinity, // Кэшируем данные бесконечно
     }),
     addChildItem: builder.mutation({
@@ -307,10 +348,25 @@ export const constructionApi = createApi({
         }
       },
     }),
+    deleteRow: builder.mutation({
+      query: (id) => ({
+        url: `v1/outlay-rows/entity/140037/row/${id}/delete`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(args, { queryFulfilled, dispatch }) {
+        try {
+          const result = await queryFulfilled;
+          dispatch(constructionApi.util.invalidateTags(['OutlayRows']));
+          console.log('Delete successful:', result, args);
+        } catch (error) {
+          console.error('Delete failed:', error);
+        }
+      },
+    }),
   }),
 });
 
-export const { useGetConstructionQuery, useAddChildItemMutation, useUpdateRowMutation } = constructionApi;
+export const { useGetConstructionQuery, useAddChildItemMutation, useUpdateRowMutation, useDeleteRowMutation } = constructionApi;
 
 export const store = configureStore({
   reducer: {
