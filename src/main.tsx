@@ -22,14 +22,16 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FeedIcon from '@mui/icons-material/Feed';
 import { red } from '@mui/material/colors';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 const AppContainer = styled.div`
   background-color: rgb(32, 33, 36);
   height: 100vh;
 `;
 
-// TABLE
 const StyledTableContainer = styled(Paper)`
   border-radius: 0px;
 `;
@@ -65,7 +67,7 @@ const StyledTableCellRight = styled(TableCell)`
 
 const StyledTableFirstCellHeader = styled(StyledTableCell)`
   color: #a1a1aa !important;
-  width: 100px;
+  width: 150px;
 `;
 
 const StyledTableCellHeader = styled(StyledTableCell)`
@@ -84,37 +86,24 @@ const StyledTableCellIconHeader = styled(StyledTableCell)`
   width: 100px;
 `;
 
-const StyledCenterWrapper = styled.div`
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
+const StyledButtonGroup = styled(ButtonGroup)`
+  margin-left: 11px;
+  &:hover {
+    border: 0px !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  .MuiButtonGroup-groupedOutlined {
+    min-width: 32px !important;
+    padding: 4px !important;
+    border: 0px !important;
+    background-color: transparent !important;
+    &:hover {
+      padding: 4px !important;
+      border: 0px !important;
+      background-color: rgba(0, 0, 0, 0.1) !important;
+    }
+  }
 `;
-
-const StyledSVG = styled.svg`
-  width: 24px;
-  height: 24px;
-`;
-
-let sidebar_titles: string[] = [
-  'По проекту',
-  'Обьекты',
-  'РД',
-  'МТО',
-  'СМР',
-  'График',
-  'МиМ',
-  'Рабочие',
-  'Капвложения',
-  'Бюджет',
-  'Финансирование',
-  'Панорамы',
-  'Камеры',
-  'Поручения',
-  'Контрагенты',
-];
 
 const RowContext = createContext(null);
 
@@ -159,16 +148,22 @@ interface AppProps {}
 
 const CustomFeedIcon: React.FC<CustomFeedIconProps> = ({ parentId, onClick }) => {
   const [deleteRow] = useDeleteRowMutation();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
   return (
     <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center', cursor: 'pointer' }}>
-      <StyledCenterWrapper onClick={() => onClick(parentId)}>
-        <StyledSVG viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#7890b2" d="M16 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8zM7 7h5v2H7zm10 10H7v-2h10zm0-4H7v-2h10zm-2-4V5l4 4z"></path>
-        </StyledSVG>
-      </StyledCenterWrapper>
-      <StyledCenterWrapper onClick={() => deleteRow(parentId)}>
-        <DeleteIcon sx={{ color: red[500] }} />
-      </StyledCenterWrapper>
+      <StyledButtonGroup size="small" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} disableElevation variant="outlined" aria-label="Button group">
+        <Button onClick={() => onClick(parentId)}>
+          <FeedIcon sx={{ color: '#7890b2' }} />
+        </Button>
+        {isHovered && (
+          <Button onClick={() => deleteRow(parentId)}>
+            <DeleteIcon sx={{ color: red[500] }} />
+          </Button>
+        )}
+      </StyledButtonGroup>
     </div>
   );
 };
@@ -546,4 +541,22 @@ const mock: Task[] = [
     supportCosts: 4,
     total: 4,
   },
+];
+
+let sidebar_titles: string[] = [
+  'По проекту',
+  'Обьекты',
+  'РД',
+  'МТО',
+  'СМР',
+  'График',
+  'МиМ',
+  'Рабочие',
+  'Капвложения',
+  'Бюджет',
+  'Финансирование',
+  'Панорамы',
+  'Камеры',
+  'Поручения',
+  'Контрагенты',
 ];
