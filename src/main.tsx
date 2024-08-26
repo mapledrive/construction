@@ -172,34 +172,43 @@ const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
   const items = useContext(RowContext);
   const { refetch } = useGetConstructionQuery('v1/outlay-rows/entity/140037/row/list');
   const [addChildItem] = useAddChildItemMutation();
-  const [newRow, setNewItem] = useState('');
+  const [updateRow] = useUpdateRowMutation();
+  const [newItem, setNewItem] = useState('');
+  const [isEditing, setIsEditing] = useState<boolean | number>(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>, id: number) {
     event.preventDefault();
-    if (newRow) {
-      const newItem = {
+    setIsEditing(false);
+
+    if (newItem) {
+      const readyItem = {
         child: [],
         equipmentCosts: 0,
         estimatedProfit: 0,
-        id: generateRandomInteger(50, 200),
+        id: id,
         machineOperatorSalary: 0,
         mainCosts: 0,
         materials: 0,
         mimExploitation: 0,
         overheads: 0,
-        rowName: newRow,
+        rowName: newItem,
         salary: 0,
         supportCosts: 0,
         total: 0,
       };
-      addChildItem(newItem);
+      updateRow(readyItem); // Pass both id and updated item
       setNewItem('');
       refetch();
     }
   }
 
-  const handleDoubleEdit = (parentId: number) => {
+  const handleDoubleEdit = (parentId: number, rowName: string) => {
+    if (isEditing !== false) return;
+
+    setNewItem(rowName);
+
     console.log('Button double-clicked!', parentId);
+    setIsEditing(parentId);
   };
 
   const handleAddChild = (parentId: number) => {
@@ -237,10 +246,6 @@ const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
     const firstLevelObjects: Task[] = filterFirstLevelRows(data);
     return (
       <>
-        <form onSubmit={handleSubmit}>
-          <input type="text" value={newRow} onChange={(e) => setNewItem(e.target.value)} placeholder="Наименование" />
-          <button type="submit">Add</button>
-        </form>
         <StyledTableContainer>
           <StyledTable aria-label="simple table">
             <StyledTableHead>
@@ -256,16 +261,34 @@ const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
             <TableBody>
               {firstLevelObjects.map(({ id, rowName }) => (
                 <React.Fragment key={id}>
-                  <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
-                    <StyledTableCellIconHeader style={{ padding: '0px' }}>
-                      <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
-                    </StyledTableCellIconHeader>
-                    <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
-                    <StyledTableCellRight>{id}</StyledTableCellRight>
-                    <StyledTableCellRight>{id}</StyledTableCellRight>
-                    <StyledTableCellRight>{id}</StyledTableCellRight>
-                    <StyledTableCellRight>{id}</StyledTableCellRight>
-                  </StyledTableRow>
+                  {isEditing !== false && isEditing === id ? (
+                    <StyledTableRow onDoubleClick={() => handleDoubleEdit(id, rowName)}>
+                      <StyledTableCellIconHeader style={{ padding: '0px' }}>
+                        <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+                      </StyledTableCellIconHeader>
+                      <StyledTableCell style={{ minWidth: '400px' }}>
+                        <form onSubmit={(e) => handleSubmit(e, id)}>
+                          <input type="text" value={newItem} onChange={(e) => setNewItem(e.target.value)} />
+                          <button type="submit">Add</button>
+                        </form>
+                      </StyledTableCell>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                    </StyledTableRow>
+                  ) : (
+                    <StyledTableRow onDoubleClick={() => handleDoubleEdit(id, rowName)}>
+                      <StyledTableCellIconHeader style={{ padding: '0px' }}>
+                        <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+                      </StyledTableCellIconHeader>
+                      <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                      <StyledTableCellRight>{id}</StyledTableCellRight>
+                    </StyledTableRow>
+                  )}
                   <Rows data={id} />
                 </React.Fragment>
               ))}
@@ -292,16 +315,34 @@ const Rows: React.FC<{ data: Task[] | number }> = ({ data }) => {
     <>
       {filteredInitialState?.map(({ child, id, rowName, ...other }, index) => (
         <React.Fragment key={id}>
-          <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
-            <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
-              <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
-            </StyledTableCellIconHeader>
-            <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
-            <StyledTableCellRight>{id}</StyledTableCellRight>
-            <StyledTableCellRight>{id}</StyledTableCellRight>
-            <StyledTableCellRight>{id}</StyledTableCellRight>
-            <StyledTableCellRight>{id}</StyledTableCellRight>
-          </StyledTableRow>
+          {isEditing !== false && isEditing === id ? (
+            <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
+              <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
+                <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+              </StyledTableCellIconHeader>
+              <StyledTableCell style={{ minWidth: '400px' }}>
+                <form onSubmit={(e) => handleSubmit(e, id)}>
+                  <input type="text" value={newItem} onChange={(e) => setNewItem(e.target.value)} />
+                  <button type="submit">Add</button>
+                </form>
+              </StyledTableCell>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+            </StyledTableRow>
+          ) : (
+            <StyledTableRow onDoubleClick={() => handleDoubleEdit(id)}>
+              <StyledTableCellIconHeader style={{ padding: '0px', paddingLeft: getLeftPadding(index + 1) }}>
+                <CustomFeedIcon parentId={id} onClick={() => handleAddChild(id)} />
+              </StyledTableCellIconHeader>
+              <StyledTableCell style={{ minWidth: '400px' }}>{rowName}</StyledTableCell>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+              <StyledTableCellRight>{id}</StyledTableCellRight>
+            </StyledTableRow>
+          )}
           <Rows data={id} {...other} />
         </React.Fragment>
       ))}
@@ -328,18 +369,18 @@ export const constructionApi = createApi({
       }),
     }),
     updateRow: builder.mutation({
-      query: (updatePayload) => ({
-        url: `v1/outlay-rows/entity/140037/row/${`0`}/update`,
+      query: (updatedItem) => ({
+        url: `v1/outlay-rows/entity/140037/row/${updatedItem.id}/update`,
         method: 'PUT',
-        body: updatePayload.data,
+        body: updatedItem,
       }),
       async onQueryStarted(args, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
-          console.log('Update successful:', result, args);
-          dispatch(constructionApi.util.resetApiState());
+          dispatch(constructionApi.util.invalidateTags(['OutlayRows']));
+          console.log('Delete successful:', result, args);
         } catch (error) {
-          console.error('Update failed:', error);
+          console.error('Delete failed:', error);
         }
       },
     }),
